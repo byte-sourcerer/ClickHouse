@@ -711,6 +711,7 @@ RangesInDataParts MergeTreeDataSelectExecutor::filterPartsByPrimaryKeyAndSkipInd
             if (metadata_snapshot->hasPrimaryKey() || part_offset_condition)
             {
                 CurrentMetrics::Increment metric(CurrentMetrics::FilteringMarksWithPrimaryKey);
+                // 过滤 part 内的 granule，返回多个可能包含结果的 mark range
                 ranges.ranges = markRangesFromPKRange(
                     part,
                     metadata_snapshot,
@@ -1178,6 +1179,7 @@ MarkRanges MergeTreeDataSelectExecutor::markRangesFromPKRange(
                     }
                     else
                     {
+                        // 什么情况下，PK column 会没有 load 进内存？load 时机是什么时候？
                         /// If the PK column was not loaded in memory - exclude it from the analysis.
                         left = NEGATIVE_INFINITY;
                         right = POSITIVE_INFINITY;

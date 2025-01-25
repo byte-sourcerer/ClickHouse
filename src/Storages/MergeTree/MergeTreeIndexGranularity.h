@@ -52,6 +52,7 @@ public:
     /// Amount of rows after last non-final mark
     size_t getLastNonFinalMarkRows() const;
 
+    // final mark 是什么概念？
     virtual bool hasFinalMark() const = 0;
     bool empty() const { return getMarksCount() == 0; }
 
