@@ -744,6 +744,7 @@ RangesInDataParts MergeTreeDataSelectExecutor::filterPartsByPrimaryKeyAndSkipInd
                 size_t total_granules = ranges.ranges.getNumberOfMarks();
                 stat.total_granules.fetch_add(total_granules, std::memory_order_relaxed);
 
+                // 用 skip index 过滤
                 ranges.ranges = filterMarksUsingIndex(
                     index_and_condition.index,
                     index_and_condition.condition,
@@ -770,6 +771,7 @@ RangesInDataParts MergeTreeDataSelectExecutor::filterPartsByPrimaryKeyAndSkipInd
                 stat.total_parts.fetch_add(1, std::memory_order_relaxed);
 
                 size_t total_granules = ranges.ranges.getNumberOfMarks();
+                // ？
                 ranges.ranges = filterMarksUsingMergedIndex(
                     indices_and_condition.indices, indices_and_condition.condition,
                     part, ranges.ranges,
