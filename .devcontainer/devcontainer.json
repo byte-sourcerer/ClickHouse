@@ -1,19 +1,19 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/cpp
 {
-	    "name": "My C++ dev environment",
-	        "build": {
-			        "dockerfile": "Dockerfile"
-				    },
-				        // Features to add to the dev container. More info: https://containers.dev/features.
-					    // "features": {},
-					        "customizations": {
-							        "vscode": {
-									            "settings": {},
-										                "extensions": [
-													                "llvm-vs-code-extensions.vscode-clangd",
-															                "ms-azuretools.vscode-docker"
-																	            ]
-																		            }
-																			        }
+	"name": "My C++ dev environment",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	// "features": {},
+	"customizations": {
+		"vscode": {
+			"settings": {},
+			"extensions": [
+				"llvm-vs-code-extensions.vscode-clangd",
+				"ms-azuretools.vscode-docker"
+			]
+		}
+	}
 }
