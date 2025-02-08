@@ -1,18 +1,20 @@
-#include <Interpreters/BloomFilter.h>
 #include <city.h>
 #include <Columns/ColumnArray.h>
-#include <Columns/ColumnNullable.h>
 #include <Columns/ColumnLowCardinality.h>
+#include <Columns/ColumnNullable.h>
 #include <DataTypes/DataTypeArray.h>
-#include <DataTypes/DataTypeNullable.h>
 #include <DataTypes/DataTypeLowCardinality.h>
-
+#include <DataTypes/DataTypeNullable.h>
+#include <Interpreters/BloomFilter.h>
+#if defined(__SSE4_2__)
+#    include <nmmintrin.h>
+#endif
 
 namespace DB
 {
 namespace ErrorCodes
 {
-    extern const int BAD_ARGUMENTS;
+extern const int BAD_ARGUMENTS;
 }
 
 static constexpr UInt64 SEED_GEN_A = 845897321;
@@ -22,7 +24,9 @@ static constexpr UInt64 MAX_BLOOM_FILTER_SIZE = 1 << 30;
 
 
 BloomFilterParameters::BloomFilterParameters(size_t filter_size_, size_t filter_hashes_, size_t seed_)
-    : filter_size(filter_size_), filter_hashes(filter_hashes_), seed(seed_)
+    : filter_size(filter_size_)
+    , filter_hashes(filter_hashes_)
+    , seed(seed_)
 {
     if (filter_size == 0)
         throw Exception(ErrorCodes::BAD_ARGUMENTS, "The size of bloom filter cannot be zero");
@@ -39,7 +43,11 @@ BloomFilter::BloomFilter(const BloomFilterParameters & params)
 }
 
 BloomFilter::BloomFilter(size_t size_, size_t hashes_, size_t seed_)
-    : size(size_), hashes(hashes_), seed(seed_), words((size + sizeof(UnderType) - 1) / sizeof(UnderType)), filter(words, 0)
+    : size(size_)
+    , hashes(hashes_)
+    , seed(seed_)
+    , words((size + sizeof(UnderType) - 1) / sizeof(UnderType))
+    , filter(words, 0)
 {
     chassert(size != 0);
     chassert(hashes != 0);
@@ -85,11 +93,33 @@ void BloomFilter::clear()
 
 bool BloomFilter::contains(const BloomFilter & bf)
 {
-    for (size_t i = 0; i < words; ++i)
+    size_t i = 0;
+
+#if defined(__SSE4_2__)
+    for (; i + 1 < words; i += 2)
+    {
+        __m128i filter_vec = _mm_loadu_si128(reinterpret_cast<const __m128i *>(&filter[i]));
+        __m128i bf_filter_vec = _mm_loadu_si128(reinterpret_cast<const __m128i *>(&bf.filter[i]));
+
+        __m128i result = _mm_and_si128(filter_vec, bf_filter_vec);
+
+        __m128i cmp = _mm_cmpeq_epi64(result, bf_filter_vec);
+
+        if (_mm_movemask_epi8(cmp) != 0xFFFF)
+        {
+            return false;
+        }
+    }
+#endif
+
+    for (; i < words; ++i)
     {
         if ((filter[i] & bf.filter[i]) != bf.filter[i])
+        {
             return false;
+        }
     }
+
     return true;
 }
 
@@ -106,7 +136,7 @@ size_t BloomFilter::memoryUsageBytes() const
     return filter.capacity() * sizeof(UnderType);
 }
 
-bool operator== (const BloomFilter & a, const BloomFilter & b)
+bool operator==(const BloomFilter & a, const BloomFilter & b)
 {
     for (size_t i = 0; i < a.words; ++i)
         if (a.filter[i] != b.filter[i])
