@@ -288,4 +288,11 @@ IMPLEMENT_SETTING_ENUM(
     {{"rest", DatabaseDataLakeCatalogType::ICEBERG_REST},
      {"unity", DatabaseDataLakeCatalogType::UNITY},
      {"glue", DatabaseDataLakeCatalogType::GLUE}})
+
+IMPLEMENT_SETTING_ENUM(
+    SkipUnavailableShardsMode, 
+    ErrorCodes::BAD_ARGUMENTS,
+    {{"unavailable", SkipUnavailableShardsMode::UNAVAILABLE},
+    {"unavailable_or_exception", SkipUnavailableShardsMode::UNAVAILABLE_OR_EXCEPTION}})
+
 }
