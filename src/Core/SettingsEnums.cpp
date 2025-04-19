@@ -290,7 +290,7 @@ IMPLEMENT_SETTING_ENUM(
      {"glue", DatabaseDataLakeCatalogType::GLUE}})
 
 IMPLEMENT_SETTING_ENUM(
-    SkipUnavailableShardsMode, 
+    SkipUnavailableShardsMode,
     ErrorCodes::BAD_ARGUMENTS,
     {{"unavailable", SkipUnavailableShardsMode::UNAVAILABLE},
     {"unavailable_or_exception", SkipUnavailableShardsMode::UNAVAILABLE_OR_EXCEPTION}})
